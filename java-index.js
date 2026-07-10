@@ -1,5 +1,5 @@
 let currentPage = 1;
-const itemsPerPage = 8; // 👈 ĐÃ ĐỔI THÀNH 8 MÓN TRÊN 1 TRANG Ở ĐÂY NHA NÍ
+const itemsPerPage = 8; 
 
 function updatePagination() {
     const allCards = Array.from(document.querySelectorAll('.product-grid .product-card'));
@@ -112,7 +112,6 @@ function changeQuantity(name, delta) {
     updateCartUI();
 }
 
-// Thay thế hàm updateCartUI cũ trong file java-index.js bằng đoạn này:
 function updateCartUI() {
     const cartCount = document.getElementById('cart-count');
     const cartItemsList = document.getElementById('cart-items-list');
@@ -144,31 +143,17 @@ function updateCartUI() {
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     cartTotalPrice.innerText = totalPrice.toLocaleString('vi-VN') + ' đ';
 
-    // ĐÂY LÀ DÒNG LỆNH THẦN THÁNH: Lưu giỏ hàng vào máy của khách
     localStorage.setItem('ntpt_shop_cart', JSON.stringify(cart));
 }
 
-// Tìm đoạn code DOMContentLoaded ở cuối cùng file java-index.js, sửa lại như vầy để tự tải lại giỏ hàng khi mở web:
-document.addEventListener("DOMContentLoaded", () => {
-    // Lấy giỏ hàng cũ đã lưu ra (nếu có)
-    const savedCart = localStorage.getItem('ntpt_shop_cart');
-    if (savedCart) {
-        cart = JSON.parse(savedCart);
-        updateCartUI(); // Hiện lại giỏ hàng cũ lên màn hình
-    }
-    updatePagination();
-});
 function checkoutZalo() {
-    // 1. Kiểm tra nếu giỏ hàng trống thì không cho đặt
     if (cart.length === 0) {
         alert("Giỏ hàng của ní còn trống không, lựa đồ bỏ vô giỏ trước đã nhe!");
         return;
     }
 
-    // 2. SỐ ĐIỆN THOẠI ZALO CHUẨN 10 SỐ CỦA NÍ
     const myZaloPhone = "0763299408"; 
 
-    // 3. Tự động gom toàn bộ dữ liệu món hàng thành tin nhắn
     let message = `🛒 ĐƠN HÀNG MỚI TỪ WEBSITE NTPT SHOP 🛒\n`;
     message += `----------------------------------\n`;
 
@@ -185,12 +170,19 @@ function checkoutZalo() {
     message += `\n💰 TỔNG TIỀN ĐƠN HÀNG: ${totalPrice.toLocaleString('vi-VN')} đ\n`;
     message += `\n👉 Nhờ shop kiểm tra kho hàng và phản hồi sớm giúp mình nhe! Thank sốp!`;
 
-    // 4. Mã hóa tin nhắn thành định dạng URL
     const encodeMessage = encodeURIComponent(message);
     
-    // 5. Tạo đường dẫn liên kết kích hoạt chat Zalo chính xác
+    // Đã sửa lại dấu gạch chéo và dấu huyền bọc link chuẩn xác 👇
     const zaloUrl = `https://zalo.me{myZaloPhone}?text=${encodeMessage}`;
 
-    // 6. Mở tab mới chuyển hướng thẳng vào ứng dụng Zalo
     window.open(zaloUrl, '_blank');
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const savedCart = localStorage.getItem('ntpt_shop_cart');
+    if (savedCart) {
+        cart = JSON.parse(savedCart);
+        updateCartUI(); 
+    }
+    updatePagination();
+});
