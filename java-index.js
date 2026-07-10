@@ -159,20 +159,17 @@ document.addEventListener("DOMContentLoaded", () => {
     updatePagination();
 });
 function checkoutZalo() {
-    // 1. Kiểm tra nếu giỏ hàng trống thì không cho đặt
     if (cart.length === 0) {
         alert("Giỏ hàng của ní còn trống không, lựa đồ bỏ vô giỏ trước đã nhe!");
         return;
     }
 
-    // 2. NHẬP SỐ ĐIỆN THOẠI ZALO CỦA NÍ VÀO ĐÂY (Viết liền, không khoảng cách, ví dụ: 0912345678)
-    const myZaloPhone = "0763299408"; 
+    // Điền số điện thoại Zalo thật của ní vào đây (Viết liền không khoảng cách)
+    const myZaloPhone = "09763299408"; 
 
-    // 3. Tự động gom và định dạng toàn bộ dữ liệu món hàng thành tin nhắn văn bản
     let message = `🛒 ĐƠN HÀNG MỚI TỪ WEBSITE NTPT SHOP 🛒\n`;
     message += `----------------------------------\n`;
     
-    // Vòng lặp quét qua từng món đồ có trong giỏ
     cart.forEach((item, index) => {
         const itemTotal = item.price * item.quantity;
         message += `📦 Món ${index + 1}: ${item.name}\n`;
@@ -182,16 +179,16 @@ function checkoutZalo() {
         message += `----------------------------------\n`;
     });
     
-    // Tính tổng số tiền cuối cùng của đơn hàng
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     message += `\n💰 TỔNG TIỀN ĐƠN HÀNG: ${totalPrice.toLocaleString('vi-VN')} đ\n`;
     message += `\n👉 Nhờ shop kiểm tra kho hàng và phản hồi sớm giúp mình nhe! Thank sốp!`;
 
-    // 4. Mã hóa tin nhắn thành định dạng URL để trình duyệt hiểu được các ký tự xuống dòng và khoảng cách
     const encodeMessage = encodeURIComponent(message);
-    
-    // Tạo đường dẫn liên kết kích hoạt chat kèm nội dung soạn sẵn của Zalo
     const zaloUrl = `https://zalo.me{myZaloPhone}?text=${encodeMessage}`;
+
+    window.open(zaloUrl, '_blank');
+}
+
 
     // 5. Bật tab mới mở thẳng ứng dụng Zalo của khách lên để gửi tin nhắn cho sốp
     window.open(zaloUrl, '_blank');
