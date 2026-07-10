@@ -173,8 +173,7 @@ function checkoutZalo() {
     const encodeMessage = encodeURIComponent(message);
     
     // Đã sửa lại dấu gạch chéo và dấu huyền bọc link chuẩn xác 👇
-    const zaloUrl = `https://zalo.me{myZaloPhone}?text=${encodeMessage}`;
-
+       const zaloUrl = `https://zalo.me/${myZaloPhone}?text=${encodeMessage}`;
     window.open(zaloUrl, '_blank');
 }
 
