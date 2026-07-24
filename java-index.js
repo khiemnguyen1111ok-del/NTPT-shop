@@ -171,78 +171,74 @@ function updateCartUI() {
 
 // ==========================================
 // ========================================== 
-// 4. XỬ LÝ ĐẶT HÀNG QUA ZALO 
-// ========================================== 
-function generateOrderMessage(cartItems) { 
-  let message = `🛒 ĐƠN HÀNG MỚI TỪ WEBSITE ${SHOP_CONFIG.SHOP_NAME} 🛒\n`; 
-  message += `----------------------------------\n`; 
-  
-  cartItems.forEach((item, index) => { 
-    const itemTotal = item.price * item.quantity; 
-    message += `📦 Món ${index + 1}: ${item.name}\n`; 
-    message += ` 🔹 Số lượng: ${item.quantity}\n`; 
-    message += ` 🔹 Đơn giá: ${item.price.toLocaleString('vi-VN')} đ\n`; 
-    message += ` 🔹 Thành tiền: ${itemTotal.toLocaleString('vi-VN')} đ\n`; 
-    message += `----------------------------------\n`; 
-  }); 
-  
-  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0); 
-  message += `\n💰 TỔNG TIỀN ĐƠN HÀNG: ${totalPrice.toLocaleString('vi-VN')} đ\n`; 
-  message += `\n👉 Nhờ shop kiểm tra kho hàng và phản hồi sớm giúp mình nhe! Thank sốp!`; 
-  return message; 
-} 
+// 4. XỬ LÝ ĐẶT HÀNG QUA ZALO
+// ==========================================
+function generateOrderMessage(cartItems) {
+  let message = `🛒 ĐƠN HÀNG MỚI TỪ WEBSITE ${SHOP_CONFIG.SHOP_NAME} 🛒\n`;
+  message += `----------------------------------\n`;
 
-function checkoutZalo() { 
-  if (!cart || cart.length === 0) { 
-    alert("Giỏ hàng của ní còn trống không, lựa đồ bỏ vô giỏ trước đã nhe!"); 
-    return; 
-  } 
-  
-  const messageContent = generateOrderMessage(cart); 
-  const encodeMessage = encodeURIComponent(messageContent); 
-  
-  // ĐÃ SỬA CHUẨN: Thêm dấu gạch chéo / và dấu $ vào trước ngoặc nhọn ở đây nhe ní!
-  const zaloUrl = `https://zalo.me{SHOP_CONFIG.ZALO_PHONE}?text=${encodeMessage}`; 
-  
-  window.open(zaloUrl, '_blank'); 
-} 
+  cartItems.forEach((item, index) => {
+    const itemTotal = item.price * item.quantity;
+    message += `📦 Món ${index + 1}: ${item.name}\n`;
+    message += ` 🔹 Số lượng: ${item.quantity}\n`;
+    message += ` 🔹 Đơn giá: ${item.price.toLocaleString('vi-VN')} đ\n`;
+    message += ` 🔹 Thành tiền: ${itemTotal.toLocaleString('vi-VN')} đ\n`;
+    message += `----------------------------------\n`;
+  });
 
-// ========================================== 
-// 5. KHỞI TẠO HỆ THỐNG KHI TẢI TRANG (DOM READY) 
-// ========================================== 
-document.addEventListener("DOMContentLoaded", () => { 
-  // Lấy dữ liệu giỏ hàng đã lưu cũ (nếu có) 
-  const savedCart = localStorage.getItem('ntpt_shop_cart'); 
-  if (savedCart) { 
-    try { 
-      cart = JSON.parse(savedCart); 
-      if (typeof updateCartUI === "function") {
-        updateCartUI(); 
-      }
-    } catch (e) { 
-      console.error("Lỗi đọc dữ liệu giỏ hàng:", e); 
-      cart = []; 
-    } 
-  } 
-  
-  // Khởi tạo hiển thị phân trang lần đầu 
-  if (typeof updatePagination === "function") {
-    updatePagination(); 
+  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  message += `\n💰 TỔNG TIỀN ĐƠN HÀNG: ${totalPrice.toLocaleString('vi-VN')} đ\n`;
+  message += `\n👉 Nhờ shop kiểm tra kho hàng và phản hồi sớm giúp mình nhe! Thank sốp!`;
+
+  return message;
+}
+
+function checkoutZalo() {
+  if (!cart || cart.length === 0) {
+    alert("Giỏ hàng của ní còn trống không, lựa đồ bỏ vô giỏ trước đã nhe!");
+    return;
   }
+
+  const messageContent = generateOrderMessage(cart);
+  const encodeMessage = encodeURIComponent(messageContent);
   
-  // Đăng ký sự kiện Tìm kiếm 
-  document.getElementById('search-btn')?.addEventListener('click', filterProducts); 
-  document.getElementById('search-input')?.addEventListener('input', filterProducts); 
-  
-  // Ủy quyền sự kiện click toàn trang (Event Delegation) giúp nút Mua luôn chạy
-  document.addEventListener('click', (e) => {
-    const buyButton = e.target.closest('.btn-buy');
-    if (buyButton) {
-      e.preventDefault();
-      const name = buyButton.getAttribute('data-name');
-      const price = parseInt(buyButton.getAttribute('data-price'), 10);
-      if (name && !isNaN(price) && typeof addToCart === "function") {
+  // ĐÃ SỬA LỖI: Thêm dấu $ trước ngoặc nhọn và dấu gạch chéo hợp lệ cho link Zalo
+  const zaloUrl = `https://zalo.me{SHOP_CONFIG.ZALO_PHONE}?text=${encodeMessage}`;
+
+  window.open(zaloUrl, '_blank');
+}
+
+// ==========================================
+// 5. KHỞI TẠO HỆ THỐNG KHI TẢI TRANG (DOM READY)
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+  // Lấy dữ liệu giỏ hàng đã lưu cũ (nếu có)
+  const savedCart = localStorage.getItem('ntpt_shop_cart');
+  if (savedCart) {
+    try {
+      cart = JSON.parse(savedCart);
+      updateCartUI();
+    } catch (e) {
+      console.error("Lỗi đọc dữ liệu giỏ hàng:", e);
+      cart = [];
+    }
+  }
+
+  // Khởi tạo hiển thị phân trang lần đầu
+  updatePagination();
+
+  // Đăng ký sự kiện Tìm kiếm
+  document.getElementById('search-btn')?.addEventListener('click', filterProducts);
+  document.getElementById('search-input')?.addEventListener('input', filterProducts);
+
+  // Đăng ký sự kiện cho các nút Mua hàng (.btn-buy) hiện có trên trang
+  document.querySelectorAll('.btn-buy').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const name = e.target.getAttribute('data-name');
+      const price = parseInt(e.target.getAttribute('data-price'), 10);
+      if (name && !isNaN(price)) {
         addToCart(name, price);
       }
-    }
+    });
   });
+});
