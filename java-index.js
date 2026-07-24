@@ -1,243 +1,323 @@
-// ==========================================
-// 1. CẤU HÌNH HỆ THỐNG
-// ==========================================
-const SHOP_CONFIG = {
-  ZALO_PHONE: "0763299408",
-  SHOP_NAME: "NTPT SHOP"
-};
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cửa Hàng điện tử 🛍️</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
 
-const itemsPerPage = 8;
-let currentPage = 1;
-let cart = [];
-
-// ==========================================
-// 2. QUẢN LÝ PHÂN TRANG & TÌM KIẾM
-// ==========================================
-function updatePagination() {
-  const allCards = Array.from(document.querySelectorAll('.product-grid .product-card'));
-  const visibleCards = allCards.filter(card => card.getAttribute('data-search-hidden') !== 'true');
-  const totalPages = Math.ceil(visibleCards.length / itemsPerPage);
-
-  // Ẩn toàn bộ sản phẩm trước
-  allCards.forEach(card => card.style.display = 'none');
-
-  // Tính toán chỉ số hiển thị cho trang hiện tại
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-
-  // Chỉ hiển thị sản phẩm thuộc trang hiện tại
-  visibleCards.slice(startIndex, endIndex).forEach(card => {
-    card.style.display = 'block';
-  });
-
-  renderPaginationButtons(totalPages);
-}
-
-function renderPaginationButtons(totalPages) {
-  const wrapper = document.getElementById('pagination-wrapper');
-  if (!wrapper) return;
-  
-  wrapper.innerHTML = '';
-  if (totalPages <= 1) return;
-
-  // Nút Quay lại (Prev)
-  const prevBtn = document.createElement('button');
-  prevBtn.className = 'pagination-btn';
-  prevBtn.innerText = '❮';
-  prevBtn.disabled = currentPage === 1;
-  prevBtn.onclick = () => {
-    currentPage--;
-    goToTop();
-  };
-  wrapper.appendChild(prevBtn);
-
-  // Các nút số trang
-  for (let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement('button');
-    btn.className = `pagination-btn ${currentPage === i ? 'active' : ''}`;
-    btn.innerText = i;
-    btn.onclick = () => {
-      currentPage = i;
-      goToTop();
-    };
-    wrapper.appendChild(btn);
-  }
-
-  // Nút Tiếp theo (Next)
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'pagination-btn';
-  nextBtn.innerText = '❯';
-  nextBtn.disabled = currentPage === totalPages;
-  nextBtn.onclick = () => {
-    currentPage++;
-    goToTop();
-  };
-  wrapper.appendChild(nextBtn);
-}
-
-function goToTop() {
-  updatePagination();
-  document.getElementById('product-section')?.scrollIntoView({ behavior: 'smooth' });
-}
-
-function filterProducts() {
-  const searchInput = document.getElementById('search-input');
-  if (!searchInput) return;
-
-  const filterValue = searchInput.value.toLowerCase().trim();
-  const allCards = document.querySelectorAll('.product-grid .product-card');
-
-  allCards.forEach(card => {
-    const titleEl = card.querySelector('h3');
-    if (!titleEl) return;
-
-    const productName = titleEl.innerText.toLowerCase();
-    if (productName.includes(filterValue)) {
-      card.removeAttribute('data-search-hidden');
-    } else {
-      card.setAttribute('data-search-hidden', 'true');
-    }
-  });
-
-  currentPage = 1; // Reset về trang đầu khi tìm kiếm
-  updatePagination();
-}
-
-// ==========================================
-// 3. QUẢN LÝ GIỎ HÀNG (LOGIC & GIAO DIỆN)
-// ==========================================
-function toggleCart() {
-  const cartDropdown = document.getElementById('cart-dropdown');
-  if (cartDropdown) cartDropdown.classList.toggle('hidden');
-}
-
-function addToCart(name, price) {
-  const existingItem = cart.find(item => item.name === name);
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({ name, price, quantity: 1 });
-  }
-  updateCartUI();
-}
-
-function changeQuantity(name, delta) {
-  const item = cart.find(item => item.name === name);
-  if (!item) return;
-
-  item.quantity += delta;
-  if (item.quantity <= 0) {
-    cart = cart.filter(i => i.name !== name);
-  }
-  updateCartUI();
-}
-
-function updateCartUI() {
-  const cartCount = document.getElementById('cart-count');
-  const cartItemsList = document.getElementById('cart-items-list');
-  const cartTotalPrice = document.getElementById('cart-total-price');
-
-  if (!cartCount || !cartItemsList || !cartTotalPrice) return;
-
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  cartCount.innerText = totalItems;
-
-  if (cart.length === 0) {
-    cartItemsList.innerHTML = '<p class="empty-cart-msg">Giỏ hàng còn trống</p>';
-  } else {
-    cartItemsList.innerHTML = '';
-    cart.forEach(item => {
-      const itemHTML = `
-        <div class="cart-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <span style="font-size: 13px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.name}">${item.name}</span>
-          <div style="display: flex; align-items: center; gap: 5px;">
-            <button onclick="changeQuantity('${item.name}', -1)" style="padding: 2px 8px; cursor: pointer; border: 1px solid #ccc; background: #f0f0f0; font-weight: bold; border-radius: 3px;">-</button>
-            <span style="font-weight: bold; min-width: 15px; text-align: center;">${item.quantity}</span>
-            <button onclick="changeQuantity('${item.name}', 1)" style="padding: 2px 8px; cursor: pointer; border: 1px solid #ccc; background: #f0f0f0; font-weight: bold; border-radius: 3px;">+</button>
-          </div>
-          <span style="font-weight: 600; font-size: 14px;">${(item.price * item.quantity).toLocaleString('vi-VN')} đ</span>
+    <!-- 1. Thanh điều hướng (Navbar) -->
+    <header class="navbar">
+        <div class="logo">NTPT Shop 🛍️</div>
+        
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Tìm sản phẩm điện tử...">
+            <button id="search-btn">Tìm</button>
         </div>
-      `;
-      cartItemsList.innerHTML += itemHTML;
-    });
-  }
 
-  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  cartTotalPrice.innerText = totalPrice.toLocaleString('vi-VN') + ' đ';
+        <div class="nav-right">
+            <!-- Icon Giỏ hàng -->
+            <div class="cart-icon-wrapper" onclick="toggleCart()">
+                <span class="cart-icon">🛒</span>
+                <span id="cart-count">0</span>
+            </div>
+            <!-- Menu tách rời, không dính lẹo -->
+            <nav class="nav-links">
+                <a href="#" class="active">Trang chủ</a>
+                <a href="san-pham.html">Sản phẩm</a>
+                <a href="#">Liên hệ</a>
+            </nav>
+        </div>
+    </header>
 
-  // Lưu giỏ hàng vào trình duyệt của khách hàng
-  localStorage.setItem('ntpt_shop_cart', JSON.stringify(cart));
-}
+    <!-- 2. Bảng chi tiết giỏ hàng (Mặc định ẩn, có nút tăng giảm) -->
+    <div id="cart-dropdown" class="cart-dropdown hidden">
+        <h3>Giỏ hàng của bạn</h3>
+        <div id="cart-items-list">
+            <p class="empty-cart-msg">Giỏ hàng còn trống</p>
+        </div>
+        <div class="cart-total">
+            <span>Tổng tiền:</span>
+            <span id="cart-total-price">0 đ</span>
+        </div>
+        <button class="btn-checkout" onclick="alert('Đang chuyển hướng thanh toán...')">Thanh toán ngay</button>
+    </div>
 
-// ==========================================
-// 4. XỬ LÝ ĐẶT HÀNG QUA ZALO
-// ==========================================
-function generateOrderMessage(cartItems) {
-  let message = `🛒 ĐƠN HÀNG MỚI TỪ WEBSITE ${SHOP_CONFIG.SHOP_NAME} 🛒\n`;
-  message += `----------------------------------\n`;
+    <!-- 3. Chữ nhấp nháy đổi màu tạo điểm nhấn -->
+    <div class="flash-text-container">
+        <h1 class="flash-text">🔥 SIÊU SALE HÔM NAY - GIẢM GIÁ LÊN ĐẾN 50%!!! 🔥</h1>
+    </div>
 
-  cartItems.forEach((item, index) => {
-    const itemTotal = item.price * item.quantity;
-    message += `📦 Món ${index + 1}: ${item.name}\n`;
-    message += ` 🔹 Số lượng: ${item.quantity}\n`;
-    message += ` 🔹 Đơn giá: ${item.price.toLocaleString('vi-VN')} đ\n`;
-    message += ` 🔹 Thành tiền: ${itemTotal.toLocaleString('vi-VN')} đ\n`;
-    message += `----------------------------------\n`;
-  });
+    <!-- 4. Khu vực Chào mừng (Hero Image) lớn cố định có chữ động bay lên -->
+    <div class="welcome-hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="welcome-title">Chào mừng bạn đến với <span class="brand-highlight">NTPT shop</span></h1>
+            <p class="welcome-subtitle">✨ Nơi mua sắm sản phẩm điện tử - Uy tín - Chất lượng hàng đầu ✨</p>
+            <a href="#product-section" class="btn-explore">Khám phá ngay</a>
+        </div>
+    </div>
 
-  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  message += `\n💰 TỔNG TIỀN ĐƠN HÀNG: ${totalPrice.toLocaleString('vi-VN')} đ\n`;
-  message += `\n👉 Nhờ shop kiểm tra kho hàng và phản hồi sớm giúp mình nhe! Thank sốp!`;
+    <!-- 5. Khu vực hiển thị 30 sản phẩm -->
+    <main class="container" id="product-section">
+        <h2 class="title">Sản Phẩm Nổi Bật</h2>
+        
+        <div class="product-grid" id="product-grid-container">
+            <!-- Món 1 -->
+            <div class="product-card">
+                <div class="badge">Hot</div>
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 1</div>
+                <h3>Sản phẩm cao cấp 1</h3>
+                <p class="price">250.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 1" data-price="250000">Mua ngay</button>
+            </div>
+            <!-- Món 2 -->
+            <div class="product-card">
+                <div class="badge">Hot</div>
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 2</div>
+                <h3>Sản phẩm cao cấp 2</h3>
+                <p class="price">420.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 2" data-price="420000">Mua ngay</button>
+            </div>
+            <!-- Món 3 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 3</div>
+                <h3>Sản phẩm cao cấp 3</h3>
+                <p class="price">190.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 3" data-price="190000">Mua ngay</button>
+            </div>
+            <!-- Món 4 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 4</div>
+                <h3>Sản phẩm cao cấp 4</h3>
+                <p class="price">550.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 4" data-price="550000">Mua ngay</button>
+            </div>
+            <!-- Món 5 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 5</div>
+                <h3>Sản phẩm cao cấp 5</h3>
+                <p class="price">300.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 5" data-price="300000">Mua ngay</button>
+            </div>
+            <!-- Món 6 -->
+            <div class="product-card">
+                <div class="badge">New</div>
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 6</div>
+                <h3>Sản phẩm cao cấp 6</h3>
+                <p class="price">680.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 6" data-price="680000">Mua ngay</button>
+            </div>
+            <!-- Món 7 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 7</div>
+                <h3>Sản phẩm cao cấp 7</h3>
+                <p class="price">150.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 7" data-price="150000">Mua ngay</button>
+            </div>
+            <!-- Món 8 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 8</div>
+                <h3>Sản phẩm cao cấp 8</h3>
+                <p class="price">890.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 8" data-price="890000">Mua ngay</button>
+            </div>
+            <!-- Món 9 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 9</div>
+                <h3>Sản phẩm cao cấp 9</h3>
+                <p class="price">210.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 9" data-price="210000">Mua ngay</button>
+            </div>
+            <!-- Món 10 -->
+            <div class="product-card">
+                <div class="badge">Hot</div>
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 10</div>
+                <h3>Sản phẩm cao cấp 10</h3>
+                <p class="price">750.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 10" data-price="750000">Mua ngay</button>
+            </div>
+            <!-- Món 11 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 11</div>
+                <h3>Sản phẩm cao cấp 11</h3>
+                <p class="price">320.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 11" data-price="320000">Mua ngay</button>
+            </div>
+            <!-- Món 12 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 12</div>
+                <h3>Sản phẩm cao cấp 12</h3>
+                <p class="price">460.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 12" data-price="460000">Mua ngay</button>
+            </div>
+            <!-- Món 13 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 13</div>
+                <h3>Sản phẩm cao cấp 13</h3>
+                <p class="price">180.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 13" data-price="180000">Mua ngay</button>
+            </div>
+            <!-- Món 14 -->
+            <div class="product-card">
+                <div class="badge">New</div>
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 14</div>
+                <h3>Sản phẩm cao cấp 14</h3>
+                <p class="price">620.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 14" data-price="620000">Mua ngay</button>
+            </div>
+            <!-- Món 15 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 15</div>
+                <h3>Sản phẩm cao cấp 15</h3>
+                <p class="price">290.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 15" data-price="290000">Mua ngay</button>
+            </div>
+            <!-- Món 16 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 16</div>
+                <h3>Sản phẩm cao cấp 16</h3>
+                <p class="price">390.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 16" data-price="390000">Mua ngay</button>
+            </div>
+            <!-- Món 17 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 17</div>
+                <h3>Sản phẩm cao cấp 17</h3>
+                <p class="price">410.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 17" data-price="410000">Mua ngay</button>
+            </div>
+            <!-- Món 18 -->
+            <div class="product-card">
+                <div class="badge">Hot</div>
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 18</div>
+                <h3>Sản phẩm cao cấp 18</h3>
+                <p class="price">850.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 18" data-price="850000">Mua ngay</button>
+            </div>
+            <!-- Món 19 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 19</div>
+                <h3>Sản phẩm cao cấp 19</h3>
+                <p class="price">230.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 19" data-price="230000">Mua ngay</button>
+            </div>
+                        <!-- Món 20 (Giữ lại để nối dòng) -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 20</div>
+                <h3>Sản phẩm cao cấp 20</h3>
+                <p class="price">340.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 20" data-price="340000">Mua ngay</button>
+            </div>
+            <!-- Món 21 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 21</div>
+                <h3>Sản phẩm cao cấp 21</h3>
+                <p class="price">170.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 21" data-price="170000">Mua ngay</button>
+            </div>
+            <!-- Món 22 -->
+            <div class="product-card">
+                <div class="badge">New</div>
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 22</div>
+                <h3>Sản phẩm cao cấp 22</h3>
+                <p class="price">580.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 22" data-price="580000">Mua ngay</button>
+            </div>
+            <!-- Món 23 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 23</div>
+                <h3>Sản phẩm cao cấp 23</h3>
+                <p class="price">260.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 23" data-price="260000">Mua ngay</button>
+            </div>
+            <!-- Món 24 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 24</div>
+                <h3>Sản phẩm cao cấp 24</h3>
+                <p class="price">490.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 24" data-price="490000">Mua ngay</button>
+            </div>
+            <!-- Món 25 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 25</div>
+                <h3>Sản phẩm cao cấp 25</h3>
+                <p class="price">310.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 25" data-price="310000">Mua ngay</button>
+            </div>
+            <!-- Món 26 -->
+            <div class="product-card">
+                <div class="badge">Hot</div>
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 26</div>
+                <h3>Sản phẩm cao cấp 26</h3>
+                <p class="price">990.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 26" data-price="990000">Mua ngay</button>
+            </div>
+            <!-- Món 27 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 27</div>
+                <h3>Sản phẩm cao cấp 27</h3>
+                <p class="price">120.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 27" data-price="120000">Mua ngay</button>
+            </div>
+            <!-- Món 28 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 28</div>
+                <h3>Sản phẩm cao cấp 28</h3>
+                <p class="price">430.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 28" data-price="430000">Mua ngay</button>
+            </div>
+            <!-- Món 29 -->
+            <div class="product-card">
+                <div class="badge">New</div>
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 29</div>
+                <h3>Sản phẩm cao cấp 29</h3>
+                <p class="price">660.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 29" data-price="660000">Mua ngay</button>
+            </div>
+            <!-- Món 30 -->
+            <div class="product-card">
+                <div class="img-placeholder">📦 Ảnh Sản Phẩm 30</div>
+                <h3>Sản phẩm cao cấp 30</h3>
+                <p class="price">520.000 đ</p>
+                <button class="btn-buy" data-name="Sản phẩm cao cấp 30" data-price="520000">Mua ngay</button>
+            </div>
+        </div> <!-- Đóng product-grid -->
 
-  return message;
-}
+        <!-- Vùng chứa các nút số phân trang -->
+        <div class="pagination-container" id="pagination-wrapper"></div>
+    </main>
 
-function checkoutZalo() {
-  if (!cart || cart.length === 0) {
-    alert("Giỏ hàng của ní còn trống không, lựa đồ bỏ vô giỏ trước đã nhe!");
-    return;
-  }
+    <!-- 6. Khu vực Chân trang (Footer) -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>NTPT Shop 🛍️</h3>
+                <p>Cửa hàng trực tuyến cung cấp trải nghiệm mua sắm điện tử, uy tín hàng đầu và dịch vụ hỗ trợ khách hàng 24/7.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Chính sách</h3>
+                <ul>
+                    <li><a href="#">Chính sách bảo mật</a></li>
+                    <li><a href="#">Quy định đổi trả</a></li>
+                    <li><a href="#">Hình thức thanh toán</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Liên hệ</h3>
+                <p>📍 Địa chỉ: Quận 1, TP. Hồ Chí Minh</p>
+                <p>📞 Hotline: 1900 xxxx</p>
+                <p>✉️ Email: support@mystore.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 MyStore. Tất cả các quyền được bảo lưu.</p>
+        </div>
+    </footer>
 
-  const messageContent = generateOrderMessage(cart);
-  const encodeMessage = encodeURIComponent(messageContent);
-  
-  // ĐÃ SỬA LỖI: Thêm dấu $ trước ngoặc nhọn và dấu gạch chéo hợp lệ cho link Zalo
-  const zaloUrl = `https://zalo.me{SHOP_CONFIG.ZALO_PHONE}?text=${encodeMessage}`;
-
-  window.open(zaloUrl, '_blank');
-}
-
-// ==========================================
-// 5. KHỞI TẠO HỆ THỐNG KHI TẢI TRANG (DOM READY)
-// ==========================================
-document.addEventListener("DOMContentLoaded", () => {
-  // Lấy dữ liệu giỏ hàng đã lưu cũ (nếu có)
-  const savedCart = localStorage.getItem('ntpt_shop_cart');
-  if (savedCart) {
-    try {
-      cart = JSON.parse(savedCart);
-      updateCartUI();
-    } catch (e) {
-      console.error("Lỗi đọc dữ liệu giỏ hàng:", e);
-      cart = [];
-    }
-  }
-
-  // Khởi tạo hiển thị phân trang lần đầu
-  updatePagination();
-
-  // Đăng ký sự kiện Tìm kiếm
-  document.getElementById('search-btn')?.addEventListener('click', filterProducts);
-  document.getElementById('search-input')?.addEventListener('input', filterProducts);
-
-  // Đăng ký sự kiện cho các nút Mua hàng (.btn-buy) hiện có trên trang
-  document.querySelectorAll('.btn-buy').forEach(button => {
-    button.addEventListener('click', (e) => {
-      const name = e.target.getAttribute('data-name');
-      const price = parseInt(e.target.getAttribute('data-price'), 10);
-      if (name && !isNaN(price)) {
-        addToCart(name, price);
-      }
-    });
-  });
-});
+    <!-- Gọi file JavaScript điều khiển ẩn/hiện trang -->
+    <script src="java-index.js"></script>
+</body>
+</html>
