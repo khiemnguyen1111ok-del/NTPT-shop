@@ -146,42 +146,5 @@ function updateCartUI() {
     localStorage.setItem('ntpt_shop_cart', JSON.stringify(cart));
 }
 
-function checkoutZalo() {
-    if (cart.length === 0) {
-        alert("Giỏ hàng của ní còn trống không, lựa đồ bỏ vô giỏ trước đã nhe!");
-        return;
-    }
-
-    const myZaloPhone = "0763299408"; 
-
-    let message = `🛒 ĐƠN HÀNG MỚI TỪ WEBSITE NTPT SHOP 🛒\n`;
-    message += `----------------------------------\n`;
-
-    cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        message += `📦 Món ${index + 1}: ${item.name}\n`;
-        message += `   🔹 Số lượng: ${item.quantity}\n`;
-        message += `   🔹 Đơn giá: ${item.price.toLocaleString('vi-VN')} đ\n`;
-        message += `   🔹 Thành tiền: ${itemTotal.toLocaleString('vi-VN')} đ\n`;
-        message += `----------------------------------\n`;
-    });
-
-    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    message += `\n💰 TỔNG TIỀN ĐƠN HÀNG: ${totalPrice.toLocaleString('vi-VN')} đ\n`;
-    message += `\n👉 Nhờ shop kiểm tra kho hàng và phản hồi sớm giúp mình nhe! Thank sốp!`;
-
-    const encodeMessage = encodeURIComponent(message);
-    
-    // Đã sửa lại dấu gạch chéo và dấu huyền bọc link chuẩn xác 👇
-       const zaloUrl = `https://zalo.me/${myZaloPhone}?text=${encodeMessage}`;
-    window.open(zaloUrl, '_blank');
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const savedCart = localStorage.getItem('ntpt_shop_cart');
-    if (savedCart) {
-        cart = JSON.parse(savedCart);
-        updateCartUI(); 
-    }
-    updatePagination();
+https://khiemnguyen1111ok-del.github.io/NTPT-shop/
 });
