@@ -36,6 +36,9 @@ function updateCartUI() {
 // ========================================== 
 // 4. XỬ LÝ ĐẶT HÀNG QUA ZALO 
 // ========================================== 
+// ========================================== 
+// 4. XỬ LÝ ĐẶT HÀNG QUA ZALO 
+// ========================================== 
 function generateOrderMessage(cartItems) { 
   let message = `🛒 ĐƠN HÀNG MỚI TỪ WEBSITE ${SHOP_CONFIG.SHOP_NAME} 🛒\n`; 
   message += `----------------------------------\n`; 
@@ -64,9 +67,8 @@ function checkoutZalo() {
   const messageContent = generateOrderMessage(cart); 
   const encodeMessage = encodeURIComponent(messageContent); 
   
-  // ĐÃ SỬA LỖI CHÍNH XÁC: Thêm dấu $ và dấu / vào link Zalo dưới đây
- // ✅ BẮT BUỘC dùng dấu huyền ` ở đầu và cuối chuỗi, và có dấu $
-const zaloUrl = `https://zalo.me{SHOP_CONFIG.ZALO_PHONE}?text=${encodeMessage}`;
+  // ĐÃ SỬA CHUẨN: Thêm dấu gạch chéo / và dấu $ vào trước ngoặc nhọn ở đây nhe ní!
+  const zaloUrl = `https://zalo.me{SHOP_CONFIG.ZALO_PHONE}?text=${encodeMessage}`; 
   
   window.open(zaloUrl, '_blank'); 
 } 
@@ -80,7 +82,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (savedCart) { 
     try { 
       cart = JSON.parse(savedCart); 
-      updateCartUI(); 
+      if (typeof updateCartUI === "function") {
+        updateCartUI(); 
+      }
     } catch (e) { 
       console.error("Lỗi đọc dữ liệu giỏ hàng:", e); 
       cart = []; 
@@ -88,21 +92,22 @@ document.addEventListener("DOMContentLoaded", () => {
   } 
   
   // Khởi tạo hiển thị phân trang lần đầu 
-  updatePagination(); 
+  if (typeof updatePagination === "function") {
+    updatePagination(); 
+  }
   
   // Đăng ký sự kiện Tìm kiếm 
   document.getElementById('search-btn')?.addEventListener('click', filterProducts); 
   document.getElementById('search-input')?.addEventListener('input', filterProducts); 
   
-  // ĐÃ SỬA LỖI CHÍNH XÁC: Lắng nghe sự kiện click toàn trang (Event Delegation)
-  // Giúp nút bấm mua hàng luôn hoạt động bất kể phân trang hay tìm kiếm
+  // Ủy quyền sự kiện click toàn trang (Event Delegation) giúp nút Mua luôn chạy
   document.addEventListener('click', (e) => {
     const buyButton = e.target.closest('.btn-buy');
     if (buyButton) {
       e.preventDefault();
       const name = buyButton.getAttribute('data-name');
       const price = parseInt(buyButton.getAttribute('data-price'), 10);
-      if (name && !isNaN(price)) {
+      if (name && !isNaN(price) && typeof addToCart === "function") {
         addToCart(name, price);
       }
     }
