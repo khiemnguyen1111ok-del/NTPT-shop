@@ -65,7 +65,8 @@ function checkoutZalo() {
   const encodeMessage = encodeURIComponent(messageContent); 
   
   // ĐÃ SỬA LỖI CHÍNH XÁC: Thêm dấu $ và dấu / vào link Zalo dưới đây
-  const zaloUrl = `https://zalo.me{SHOP_CONFIG.ZALO_PHONE}?text=${encodeMessage}`; 
+ // ✅ BẮT BUỘC dùng dấu huyền ` ở đầu và cuối chuỗi, và có dấu $
+const zaloUrl = `https://zalo.me{SHOP_CONFIG.ZALO_PHONE}?text=${encodeMessage}`;
   
   window.open(zaloUrl, '_blank'); 
 } 
