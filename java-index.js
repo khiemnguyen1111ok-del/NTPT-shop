@@ -239,5 +239,4 @@ document.addEventListener("DOMContentLoaded", () => {
         addToCart(name, price);
       }
     });
-  });
-});
+
